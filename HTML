@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolatore IRPEF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            width: 80%;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Calcolatore IRPEF</h2>
+        <label for="reddito">Reddito Annuo Lordo (€):</label>
+        <input type="number" id="reddito" min="0">
+        <button onclick="calcolaIrpef()">Calcola</button>
+        <h3>Risultato</h3>
+        <p id="risultato"></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Scaglione</th>
+                    <th>Aliquota</th>
+                    <th>Imposta</th>
+                </tr>
+            </thead>
+            <tbody id="dettaglio"></tbody>
+        </table>
+    </div>
+    <script>
+        function calcolaIrpef() {
+            let reddito = parseFloat(document.getElementById("reddito").value);
+            if (isNaN(reddito) || reddito <= 0) {
+                alert("Inserisci un reddito valido.");
+                return;
+            }
+            
+            const scaglioni = [
+                { limite: 15000, aliquota: 23 },
+                { limite: 28000, aliquota: 25 },
+                { limite: 50000, aliquota: 35 },
+                { limite: Infinity, aliquota: 43 }
+            ];
+            
+            let impostaTotale = 0;
+            let impostaDettagliata = "";
+            let redditoResiduo = reddito;
+            let base = 0;
+
+            for (let i = 0; i < scaglioni.length; i++) {
+                let scaglione = scaglioni[i];
+                if (redditoResiduo > 0) {
+                    let imponibile = Math.min(redditoResiduo, scaglione.limite - base);
+                    let imposta = (imponibile * scaglione.aliquota) / 100;
+                    impostaTotale += imposta;
+                    impostaDettagliata += `<tr><td>${base} - ${scaglione.limite}</td><td>${scaglione.aliquota}%</td><td>${imposta.toFixed(2)}€</td></tr>`;
+                    base = scaglione.limite;
+                    redditoResiduo -= imponibile;
+                }
+            }
+            
+            let percentualeTassazione = (impostaTotale / reddito) * 100;
+            document.getElementById("risultato").innerHTML = `
+                Imposta totale: <strong>${impostaTotale.toFixed(2)}€</strong> <br>
+                Percentuale di tassazione: <strong>${percentualeTassazione.toFixed(2)}%</strong>
+            `;
+            document.getElementById("dettaglio").innerHTML = impostaDettagliata;
+        }
+    </script>
+</body>
+</html>
